@@ -7,7 +7,7 @@ from app.tool.search.google_search import GoogleSearchEngine
 
 __all__ = [
     "WebSearchEngine",
-    "BaiduSearchEngine",
+    # "BaiduSearchEngine",
     "DuckDuckGoSearchEngine",
     "GoogleSearchEngine",
     "BingSearchEngine",
