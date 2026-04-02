@@ -1,195 +1,190 @@
-<p align="center">
-  <img src="assets/logo.jpg" width="200"/>
-</p>
+# OpenManus (Fork)
 
-English | [中文](README_zh.md) | [한국어](README_ko.md) | [日本語](README_ja.md)
+A customized fork of [FoundationAgents/OpenManus](https://github.com/FoundationAgents/OpenManus) — an open-source framework for building general AI agents.
 
-[![GitHub stars](https://img.shields.io/github/stars/FoundationAgents/OpenManus?style=social)](https://github.com/FoundationAgents/OpenManus/stargazers)
-&ensp;
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) &ensp;
-[![Discord Follow](https://dcbadge.vercel.app/api/server/DYn29wFk9z?style=flat)](https://discord.gg/DYn29wFk9z)
-[![Demo](https://img.shields.io/badge/Demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/lyh-917/OpenManusDemo)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15186407.svg)](https://doi.org/10.5281/zenodo.15186407)
+This fork adds a **Streamlit web frontend**, **RAG (Retrieval-Augmented Generation) tool**, **interactive todo/planning review**, and other quality-of-life improvements on top of the original OpenManus project.
 
-# 👋 OpenManus
+---
 
-Manus is incredible, but OpenManus can achieve any idea without an *Invite Code* 🛫!
+## What's New in This Fork
 
-Our team members [@Xinbin Liang](https://github.com/mannaandpoem) and [@Jinyu Xiang](https://github.com/XiangJinyu) (core authors), along with [@Zhaoyang Yu](https://github.com/MoshiQAQ), [@Jiayi Zhang](https://github.com/didiforgithub), and [@Sirui Hong](https://github.com/stellaHSR), we are from [@MetaGPT](https://github.com/geekan/MetaGPT). The prototype is launched within 3 hours and we are keeping building!
+| Feature | Description |
+|---|---|
+| **Streamlit Frontend** | A multi-page web UI with input, plan review, live execution, and results phases. Includes an agent execution graph visualization. |
+| **RAG Tool** | A Retrieval-Augmented Generation pipeline that searches the web (or uses local documents), ranks results, and generates cited answers via the LLM. |
+| **Interactive Todo / Plan Review** | The planning flow now presents generated steps to the user for review and modification before execution begins. |
+| **Daytona Made Optional** | The Daytona sandbox integration is now opt-in, so the agent runs without a Daytona environment configured. |
+| **Baidu Search Removed** | Baidu removed from the active search engine registry. Remaining engines: Google, Bing, DuckDuckGo. |
+| **Dependency Fixes** | Resolved package version conflicts introduced by the above additions. |
 
-It's a simple implementation, so we welcome any suggestions, contributions, and feedback!
-
-Enjoy your own agent with OpenManus!
-
-We're also excited to introduce [OpenManus-RL](https://github.com/OpenManus/OpenManus-RL), an open-source project dedicated to reinforcement learning (RL)- based (such as GRPO) tuning methods for LLM agents, developed collaboratively by researchers from UIUC and OpenManus.
-
-## Project Demo
-
-<video src="https://private-user-images.githubusercontent.com/61239030/420168772-6dcfd0d2-9142-45d9-b74e-d10aa75073c6.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDEzMTgwNTksIm5iZiI6MTc0MTMxNzc1OSwicGF0aCI6Ii82MTIzOTAzMC80MjAxNjg3NzItNmRjZmQwZDItOTE0Mi00NWQ5LWI3NGUtZDEwYWE3NTA3M2M2Lm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTAzMDclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwMzA3VDAzMjIzOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdiZjFkNjlmYWNjMmEzOTliM2Y3M2VlYjgyNDRlZDJmOWE3NWZhZjE1MzhiZWY4YmQ3NjdkNTYwYTU5ZDA2MzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.UuHQCgWYkh0OQq9qsUWqGsUbhG3i9jcZDAMeHjLt5T4" data-canonical-src="https://private-user-images.githubusercontent.com/61239030/420168772-6dcfd0d2-9142-45d9-b74e-d10aa75073c6.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NDEzMTgwNTksIm5iZiI6MTc0MTMxNzc1OSwicGF0aCI6Ii82MTIzOTAzMC80MjAxNjg3NzItNmRjZmQwZDItOTE0Mi00NWQ5LWI3NGUtZDEwYWE3NTA3M2M2Lm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTAzMDclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwMzA3VDAzMjIzOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdiZjFkNjlmYWNjMmEzOTliM2Y3M2VlYjgyNDRlZDJmOWE3NWZhZjE1MzhiZWY4YmQ3NjdkNTYwYTU5ZDA2MzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.UuHQCgWYkh0OQq9qsUWqGsUbhG3i9jcZDAMeHjLt5T4" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit" style="max-height:640px; min-height: 200px"></video>
+---
 
 ## Installation
 
-We provide two installation methods. Method 2 (using uv) is recommended for faster installation and better dependency management.
+### Prerequisites
 
-### Method 1: Using conda
+- Python 3.12+
+- [conda](https://docs.conda.io/) or [uv](https://github.com/astral-sh/uv)
 
-1. Create a new conda environment:
+### Using conda
 
 ```bash
 conda create -n open_manus python=3.12
 conda activate open_manus
-```
-
-2. Clone the repository:
-
-```bash
-git clone https://github.com/FoundationAgents/OpenManus.git
+git clone https://github.com/mnc1423/OpenManus.git
 cd OpenManus
-```
-
-3. Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-### Method 2: Using uv (Recommended)
-
-1. Install uv (A fast Python package installer and resolver):
+### Using uv (Recommended)
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-2. Clone the repository:
-
-```bash
-git clone https://github.com/FoundationAgents/OpenManus.git
+git clone https://github.com/mnc1423/OpenManus.git
 cd OpenManus
-```
-
-3. Create a new virtual environment and activate it:
-
-```bash
 uv venv --python 3.12
 source .venv/bin/activate  # On Unix/macOS
-# Or on Windows:
-# .venv\Scripts\activate
-```
-
-4. Install dependencies:
-
-```bash
+# .venv\Scripts\activate   # On Windows
 uv pip install -r requirements.txt
 ```
 
-### Browser Automation Tool (Optional)
+### Browser Automation (Optional)
+
 ```bash
 playwright install
 ```
 
+---
+
 ## Configuration
 
-OpenManus requires configuration for the LLM APIs it uses. Follow these steps to set up your configuration:
-
-1. Create a `config.toml` file in the `config` directory (you can copy from the example):
+1. Copy the example config:
 
 ```bash
 cp config/config.example.toml config/config.toml
 ```
 
-2. Edit `config/config.toml` to add your API keys and customize settings:
+2. Edit `config/config.toml` with your API key and preferred model:
 
 ```toml
-# Global LLM configuration
 [llm]
-model = "gpt-4o"
-base_url = "https://api.openai.com/v1"
-api_key = "sk-..."  # Replace with your actual API key
-max_tokens = 4096
+model = "claude-3-7-sonnet-20250219"
+base_url = "https://api.anthropic.com/v1/"
+api_key = "YOUR_API_KEY"
+max_tokens = 8192
 temperature = 0.0
-
-# Optional configuration for specific LLM models
-[llm.vision]
-model = "gpt-4o"
-base_url = "https://api.openai.com/v1"
-api_key = "sk-..."  # Replace with your actual API key
 ```
 
-## Quick Start
+Supported providers include **Anthropic**, **OpenAI**, **Azure OpenAI**, **AWS Bedrock**, **Ollama**, and **Jiekou.AI**. See `config/config.example.toml` for full examples.
 
-One line for run OpenManus:
+---
+
+## Usage
+
+### CLI Mode
 
 ```bash
 python main.py
 ```
 
-Then input your idea via terminal!
+You can specify the flow type:
 
-For MCP tool version, you can run:
+```bash
+python main.py --flow planning   # Interactive planning with todo review
+python main.py --flow agent      # Direct agent execution
+```
+
+### Streamlit Web UI
+
+Launch the web frontend:
+
+```bash
+# Linux / macOS
+./run_streamlit.sh
+
+# Windows
+run_streamlit.bat
+```
+
+The Streamlit app provides four phases:
+1. **Input** — Enter your prompt
+2. **Review** — Inspect and edit the generated plan
+3. **Executing** — Watch the agent run with a live execution graph
+4. **Done** — View results
+
+### MCP Tool Version
+
 ```bash
 python run_mcp.py
 ```
 
-For unstable multi-agent version, you also can run:
+### Multi-Agent Flow
 
 ```bash
 python run_flow.py
 ```
 
-### Custom Adding Multiple Agents
-
-Currently, besides the general OpenManus Agent, we have also integrated the DataAnalysis Agent, which is suitable for data analysis and data visualization tasks. You can add this agent to `run_flow` in `config.toml`.
+To enable the Data Analysis agent, set in `config/config.toml`:
 
 ```toml
-# Optional configuration for run-flow
 [runflow]
-use_data_analysis_agent = true     # Disabled by default, change to true to activate
+use_data_analysis_agent = true
 ```
-In addition, you need to install the relevant dependencies to ensure the agent runs properly: [Detailed Installation Guide](app/tool/chart_visualization/README.md##Installation)
 
-## How to contribute
+---
 
-We welcome any friendly suggestions and helpful contributions! Just create issues or submit pull requests.
+## Project Structure
 
-Or contact @mannaandpoem via 📧email: mannaandpoem@gmail.com
-
-**Note**: Before submitting a pull request, please use the pre-commit tool to check your changes. Run `pre-commit run --all-files` to execute the checks.
-
-## Community Group
-Join our networking group on Feishu and share your experience with other developers!
-
-<div align="center" style="display: flex; gap: 20px;">
-    <img src="assets/community_group.jpg" alt="OpenManus 交流群" width="300" />
-</div>
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=FoundationAgents/OpenManus&type=Date)](https://star-history.com/#FoundationAgents/OpenManus&Date)
-
-## Sponsors
-Thanks to [PPIO](https://ppinfra.com/user/register?invited_by=OCPKCN&utm_source=github_openmanus&utm_medium=github_readme&utm_campaign=link) for computing source support.
-> PPIO: The most affordable and easily-integrated MaaS and GPU cloud solution.
-
-
-## Acknowledgement
-
-Thanks to [anthropic-computer-use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo), [browser-use](https://github.com/browser-use/browser-use) and [crawl4ai](https://github.com/unclecode/crawl4ai) for providing basic support for this project!
-
-Additionally, we are grateful to [AAAJ](https://github.com/metauto-ai/agent-as-a-judge), [MetaGPT](https://github.com/geekan/MetaGPT), [OpenHands](https://github.com/All-Hands-AI/OpenHands) and [SWE-agent](https://github.com/SWE-agent/SWE-agent).
-
-We also thank stepfun(阶跃星辰) for supporting our Hugging Face demo space.
-
-OpenManus is built by contributors from MetaGPT. Huge thanks to this agent community!
-
-## Cite
-```bibtex
-@misc{openmanus2025,
-  author = {Xinbin Liang and Jinyu Xiang and Zhaoyang Yu and Jiayi Zhang and Sirui Hong and Sheng Fan and Xiao Tang and Bang Liu and Yuyu Luo and Chenglin Wu},
-  title = {OpenManus: An open-source framework for building general AI agents},
-  year = {2025},
-  publisher = {Zenodo},
-  doi = {10.5281/zenodo.15186407},
-  url = {https://doi.org/10.5281/zenodo.15186407},
-}
 ```
+OpenManus/
+├── main.py                  # CLI entry point
+├── run_flow.py              # Multi-agent flow runner
+├── run_mcp.py               # MCP tool version
+├── run_streamlit.bat/.sh    # Streamlit launcher scripts
+├── app/
+│   ├── agent/               # Agent implementations
+│   ├── flow/                # Flow orchestration (planning, etc.)
+│   ├── frontend/streamlit/  # Streamlit web UI
+│   ├── tool/                # Tools available to agents
+│   │   ├── rag_tool.py      # RAG pipeline (new)
+│   │   ├── web_search.py    # Web search tool
+│   │   ├── search/          # Search engine backends
+│   │   ├── browser_use_tool.py
+│   │   └── ...
+│   ├── config.py            # Configuration loading
+│   └── prompt/              # Prompt templates
+├── config/                  # Configuration files
+├── tests/                   # Test suite
+└── workspace/               # Agent workspace output
+```
+
+---
+
+## Roadmap / TODO
+
+- [ ] **Session persistence** — Save and resume agent sessions so users can pick up where they left off
+- [ ] **RAG with local file support** — Allow the RAG tool to index local files (PDF, markdown, code) instead of only web search results
+- [ ] **Streamlit auth & multi-user support** — Add basic authentication so the frontend can be safely exposed beyond localhost
+- [ ] **Execution history dashboard** — Store past runs and let users browse/search previous agent outputs in the Streamlit UI
+- [ ] **Streaming output in frontend** — Show real-time token-by-token LLM responses in the Streamlit execution phase
+- [ ] **Cost tracking** — Display token usage and estimated API cost per run
+- [ ] **Configurable tool selection** — Let users enable/disable specific tools (browser, RAG, search, etc.) per session from the UI
+- [ ] **Docker Compose setup** — One-command deployment with Docker Compose bundling the app, browser automation, and optional sandbox
+- [ ] **Test coverage** — Expand unit and integration tests, especially for the RAG tool and Streamlit frontend
+- [ ] **Sync with upstream** — Periodically merge updates from FoundationAgents/OpenManus
+
+---
+
+## Original Project
+
+This is a fork of **[FoundationAgents/OpenManus](https://github.com/FoundationAgents/OpenManus)** — an open-source framework for building general AI agents, created by the [MetaGPT](https://github.com/geekan/MetaGPT) team.
+
+Original authors: Xinbin Liang, Jinyu Xiang, Zhaoyang Yu, Jiayi Zhang, Sirui Hong, and others.
+
+> See also: [OpenManus-RL](https://github.com/OpenManus/OpenManus-RL) — reinforcement learning-based tuning for LLM agents.
+
+---
+
+## License
+
+[MIT](LICENSE)
