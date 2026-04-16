@@ -163,7 +163,7 @@ OpenManus/
 ## Roadmap / TODO
 
 - [ ] **Session persistence** — Save and resume agent sessions so users can pick up where they left off
-- [ ] **RAG with local file support** — Allow the RAG tool to index local files (PDF, markdown, code) instead of only web search results
+- [x] **RAG with local file support** — Allow the RAG tool to index local files (PDF, markdown, code) instead of only web search results
 - [ ] **Streamlit auth & multi-user support** — Add basic authentication so the frontend can be safely exposed beyond localhost
 - [ ] **Execution history dashboard** — Store past runs and let users browse/search previous agent outputs in the Streamlit UI
 - [ ] **Streaming output in frontend** — Show real-time token-by-token LLM responses in the Streamlit execution phase
