@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Optional
 
 from pydantic import Field
@@ -7,6 +8,15 @@ from app.logger import logger
 from app.schema import Message
 from app.tool.base import BaseTool, ToolResult
 from app.tool.web_search import WebSearch, SearchResult
+
+# File extensions supported for local file RAG
+SUPPORTED_TEXT_EXTENSIONS = {
+    ".txt", ".md", ".csv", ".json", ".jsonl",
+    ".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".hpp",
+    ".html", ".htm", ".xml", ".yaml", ".yml", ".toml", ".ini", ".cfg",
+    ".log", ".sql", ".sh", ".bat", ".ps1",
+    ".rst", ".tex", ".r", ".go", ".rs", ".rb", ".php",
+}
 
 
 class RAGTool(BaseTool):
@@ -42,11 +52,98 @@ class RAGTool(BaseTool):
             "local_documents": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "Optional local documents to use instead of web search results.",
+                "description": "Optional local documents (raw text) to use instead of web search results.",
+            },
+            "local_files": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": (
+                    "Optional list of local file paths to read and use as RAG documents. "
+                    "Supports text files (.txt, .md, .csv, .json, .py, .html, etc.) and .pdf files. "
+                    "Can also be a directory path to load all supported files from it."
+                ),
             },
         },
         "required": ["query"],
     }
+
+    @staticmethod
+    def _read_file(file_path: str) -> Optional[str]:
+        """Read a single file and return its text content, or None on failure."""
+        path = Path(file_path).resolve()
+        if not path.is_file():
+            logger.warning(f"Skipping non-existent file: {path}")
+            return None
+
+        ext = path.suffix.lower()
+
+        # PDF support via PyPDF2 or pdfplumber (best-effort)
+        if ext == ".pdf":
+            return RAGTool._read_pdf(path)
+
+        if ext not in SUPPORTED_TEXT_EXTENSIONS:
+            logger.warning(f"Skipping unsupported file type '{ext}': {path}")
+            return None
+
+        try:
+            return path.read_text(encoding="utf-8", errors="replace")
+        except Exception as e:
+            logger.warning(f"Failed to read {path}: {e}")
+            return None
+
+    @staticmethod
+    def _read_pdf(path: Path) -> Optional[str]:
+        """Extract text from a PDF file."""
+        # Try PyPDF2 first
+        try:
+            from PyPDF2 import PdfReader
+
+            reader = PdfReader(str(path))
+            pages = [page.extract_text() or "" for page in reader.pages]
+            text = "\n".join(pages).strip()
+            if text:
+                return text
+        except ImportError:
+            pass
+        except Exception as e:
+            logger.warning(f"PyPDF2 failed for {path}: {e}")
+
+        # Fallback to pdfplumber
+        try:
+            import pdfplumber
+
+            with pdfplumber.open(str(path)) as pdf:
+                pages = [page.extract_text() or "" for page in pdf.pages]
+            text = "\n".join(pages).strip()
+            if text:
+                return text
+        except ImportError:
+            pass
+        except Exception as e:
+            logger.warning(f"pdfplumber failed for {path}: {e}")
+
+        logger.warning(
+            f"Cannot read PDF {path}: install PyPDF2 or pdfplumber (`pip install PyPDF2` or `pip install pdfplumber`)"
+        )
+        return None
+
+    @staticmethod
+    def _collect_files_from_path(file_path: str) -> List[str]:
+        """Given a path, return a list of supported file paths (expanding directories)."""
+        path = Path(file_path).resolve()
+        if path.is_file():
+            return [str(path)]
+        if path.is_dir():
+            collected = []
+            for child in sorted(path.rglob("*")):
+                if child.is_file() and (
+                    child.suffix.lower() in SUPPORTED_TEXT_EXTENSIONS
+                    or child.suffix.lower() == ".pdf"
+                ):
+                    collected.append(str(child))
+            return collected
+        logger.warning(f"Path does not exist: {path}")
+        return []
 
     async def execute(
         self,
@@ -55,6 +152,7 @@ class RAGTool(BaseTool):
         top_k: int = 3,
         include_page_content: bool = False,
         local_documents: Optional[List[str]] = None,
+        local_files: Optional[List[str]] = None,
     ) -> ToolResult:
         """Execute the RAG workflow."""
         if not query.strip():
@@ -63,8 +161,22 @@ class RAGTool(BaseTool):
         documents: List[str] = []
         sources: List[str] = []
 
+        # Load documents from local files
+        if local_files:
+            for file_entry in local_files:
+                for fpath in self._collect_files_from_path(file_entry):
+                    content = self._read_file(fpath)
+                    if content:
+                        documents.append(content)
+                        sources.append(fpath)
+            if not documents:
+                return self.fail_response(
+                    "No readable files found in the provided local_files paths."
+                )
+            logger.info(f"Loaded {len(documents)} file(s) for RAG retrieval")
+
         # Use local documents when provided, else perform web search
-        if local_documents:
+        elif local_documents:
             documents = [doc.strip() for doc in local_documents if doc and doc.strip()]
             sources = [f"local_doc_{i+1}" for i in range(len(documents))]
             logger.info("Using local documents for RAG retrieval")
@@ -100,8 +212,8 @@ class RAGTool(BaseTool):
         if not documents:
             return self.fail_response("No documents available to answer the query")
 
-        # simple relevance ranking by query-token overlap for local docs
-        if local_documents:
+        # simple relevance ranking by query-token overlap for local docs/files
+        if local_documents or local_files:
             query_tokens = set(query.lower().split())
 
             def score_doc(doc_text: str) -> float:
