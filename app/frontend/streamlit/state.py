@@ -5,7 +5,7 @@ Session state management and defaults for the Streamlit app.
 import streamlit as st
 
 DEFAULTS = {
-    "phase": "input",      # input | review | executing | done
+    "phase": "input",  # input | review | executing | done | team_chat
     "prompt": "",
     "agent": None,
     "flow": None,
@@ -13,6 +13,16 @@ DEFAULTS = {
     "step_results": [],
     "current_step": None,
     "error": None,
+    # Team-related state
+    "team_manager": None,
+    "selected_team_id": None,
+    "selected_team": None,
+    "show_create_team_modal": False,
+    "show_team_settings": False,
+    "show_dissolve_confirm": False,
+    "settings_team_id": None,
+    "team_rules_count": 1,
+    "edit_team_rules_count": 1,
 }
 
 
