@@ -19,6 +19,12 @@ This fork adds a **Streamlit web frontend**, **RAG (Retrieval-Augmented Generati
 
 ---
 
+## Concept Architecture
+
+![Architecture](assets/architecture.png)
+
+---
+
 ## Installation
 
 ### Prerequisites
