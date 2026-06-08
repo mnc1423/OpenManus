@@ -10,6 +10,7 @@ DEFAULTS = {
     "agent": None,
     "flow": None,
     "plan_data": None,
+    "enabled_tools": None,  # None = agent default; otherwise list of tool names
     "step_results": [],
     "current_step": None,
     "error": None,
