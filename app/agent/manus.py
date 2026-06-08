@@ -16,6 +16,63 @@ from app.tool.rag_tool import RAGTool
 from app.tool.str_replace_editor import StrReplaceEditor
 
 
+# Registry of tools the user can enable/disable per session from the UI.
+# Maps a tool's `name` -> (factory, human label, short description, enabled-by-default).
+# `Terminate` is intentionally excluded: it is a special tool that must always be
+# available so the agent can signal completion.
+TOGGLEABLE_TOOLS: Dict[str, tuple] = {
+    "python_execute": (
+        PythonExecute,
+        "Python Execute",
+        "Run Python code to compute, transform data, or call libraries.",
+        True,
+    ),
+    "browser_use": (
+        BrowserUseTool,
+        "Browser",
+        "Browse and automate the web (navigate, click, extract pages).",
+        True,
+    ),
+    "str_replace_editor": (
+        StrReplaceEditor,
+        "File Editor",
+        "Create, view, and edit files in the workspace.",
+        True,
+    ),
+    "ask_human": (
+        AskHuman,
+        "Ask Human",
+        "Pause execution to ask you a clarifying question.",
+        True,
+    ),
+    "rag_qa": (
+        RAGTool,
+        "RAG / Knowledge",
+        "Answer questions from indexed documents and web search.",
+        True,
+    ),
+}
+
+
+def build_tool_collection(enabled_tools: Optional[List[str]] = None) -> ToolCollection:
+    """Build a ToolCollection from the toggleable-tool registry.
+
+    Args:
+        enabled_tools: Names of tools to include. ``None`` selects every tool
+            marked enabled-by-default. Unknown names are ignored.
+
+    ``Terminate`` is always appended so the agent can end its run.
+    """
+    if enabled_tools is None:
+        selected = [name for name, meta in TOGGLEABLE_TOOLS.items() if meta[3]]
+    else:
+        selected = [name for name in enabled_tools if name in TOGGLEABLE_TOOLS]
+
+    tools = [TOGGLEABLE_TOOLS[name][0]() for name in selected]
+    tools.append(Terminate())
+    return ToolCollection(*tools)
+
+
 class Manus(ToolCallAgent):
     """A versatile general-purpose agent with support for both local and MCP tools."""
 
@@ -34,16 +91,7 @@ class Manus(ToolCallAgent):
     mcp_clients: MCPClients = Field(default_factory=MCPClients)
 
     # Add general-purpose tools to the tool collection
-    available_tools: ToolCollection = Field(
-        default_factory=lambda: ToolCollection(
-            PythonExecute(),
-            BrowserUseTool(),
-            StrReplaceEditor(),
-            AskHuman(),
-            RAGTool(),
-            Terminate(),
-        )
-    )
+    available_tools: ToolCollection = Field(default_factory=build_tool_collection)
 
     special_tool_names: list[str] = Field(default_factory=lambda: [Terminate().name])
     browser_context_helper: Optional[BrowserContextHelper] = None
@@ -61,9 +109,18 @@ class Manus(ToolCallAgent):
         return self
 
     @classmethod
-    async def create(cls, **kwargs) -> "Manus":
-        """Factory method to create and properly initialize a Manus instance."""
+    async def create(
+        cls, enabled_tools: Optional[List[str]] = None, **kwargs
+    ) -> "Manus":
+        """Factory method to create and properly initialize a Manus instance.
+
+        Args:
+            enabled_tools: Optional list of tool names (from ``TOGGLEABLE_TOOLS``)
+                to enable for this session. ``None`` uses the default tool set.
+        """
         instance = cls(**kwargs)
+        if enabled_tools is not None:
+            instance.available_tools = build_tool_collection(enabled_tools)
         await instance.initialize_mcp_servers()
         instance._initialized = True
         return instance
