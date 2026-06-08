@@ -30,8 +30,10 @@ from app.logger import logger
 # Page config
 # ---------------------------------------------------------------------------
 
-st.set_page_config(page_title="OpenManus", page_icon=":robot_face:", layout="wide")
-st.title(":robot_face: OpenManus")
+st.set_page_config(
+    page_title="Multi Agent Canvas", page_icon=":robot_face:", layout="wide"
+)
+st.title(":robot_face: Multi Agent Canvas")
 st.caption("AI Agent with Planning Flow + Team Collaboration")
 
 # ---------------------------------------------------------------------------
