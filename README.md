@@ -19,6 +19,14 @@ This fork adds a **Streamlit web frontend**, **RAG (Retrieval-Augmented Generati
 
 ---
 
+## Frontend
+
+The Streamlit web UI where you enter a task, pick which tools the agent may use, and review the generated plan before execution.
+
+![Frontend main page](assets/fe_example.PNG)
+
+---
+
 ## Concept Architecture
 
 ![Architecture](assets/architecture.png)
@@ -174,7 +182,7 @@ OpenManus/
 - [ ] **Execution history dashboard** — Store past runs and let users browse/search previous agent outputs in the Streamlit UI
 - [ ] **Streaming output in frontend** — Show real-time token-by-token LLM responses in the Streamlit execution phase
 - [ ] **Cost tracking** — Display token usage and estimated API cost per run
-- [ ] **Configurable tool selection** — Let users enable/disable specific tools (browser, RAG, search, etc.) per session from the UI
+- [x] **Configurable tool selection** — Let users enable/disable specific tools (browser, RAG, search, etc.) per session from the UI
 - [ ] **Docker Compose setup** — One-command deployment with Docker Compose bundling the app, browser automation, and optional sandbox
 - [ ] **Test coverage** — Expand unit and integration tests, especially for the RAG tool and Streamlit frontend
 - [ ] **Sync with upstream** — Periodically merge updates from FoundationAgents/OpenManus
