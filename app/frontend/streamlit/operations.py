@@ -11,9 +11,15 @@ from app.flow.planning import PlanStepStatus
 from app.logger import logger
 
 
-async def create_agent_and_plan(prompt: str):
-    """Create the Manus agent, build a PlanningFlow, and generate the initial plan."""
-    agent = await Manus.create()
+async def create_agent_and_plan(prompt: str, enabled_tools: List[str] = None):
+    """Create the Manus agent, build a PlanningFlow, and generate the initial plan.
+
+    Args:
+        prompt: The user's task prompt.
+        enabled_tools: Optional list of tool names to enable for this session.
+            ``None`` uses the agent's default tool set.
+    """
+    agent = await Manus.create(enabled_tools=enabled_tools)
     flow = FlowFactory.create_flow(
         flow_type=FlowType.PLANNING,
         agents={"manus": agent},
