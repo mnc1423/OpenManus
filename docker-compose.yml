@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  openmanus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mapc
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./:/app:cached
+    environment:
+      PYTHONUNBUFFERED: "1"
+      STREAMLIT_SERVER_RUN_ON_SAVE: "true"
+    command: ["streamlit", "run", "app/frontend/streamlit/app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
