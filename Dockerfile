@@ -1,13 +1,16 @@
 FROM python:3.12-slim
 
-WORKDIR /app/OpenManus
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends git curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && (command -v uv >/dev/null 2>&1 || pip install --no-cache-dir uv)
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt streamlit
 
-RUN uv pip install --system -r requirements.txt
+COPY . ./
 
-CMD ["bash"]
+EXPOSE 8501
+CMD ["streamlit", "run", "app/frontend/streamlit/app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
